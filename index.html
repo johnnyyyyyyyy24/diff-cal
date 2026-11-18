@@ -6,7 +6,8 @@
 body{display:flex;align-items:center;justify-content:center}canvas{touch-action:none;display:block}</style></head>
 <body><canvas id="c" width="1200" height="760"></canvas>
 <script>
-const W=1200,H=760,cv=document.getElementById('c'),g=cv.getContext('2d');
+const W=1200,H=760,cv=document.getElementById('c'),g=cv.getContext('2d'),DPR=Math.min(window.devicePixelRatio||1,2);
+cv.width=W*DPR;cv.height=H*DPR;g.setTransform(DPR,0,0,DPR,0,0);
 if(!g.roundRect)g.roundRect=function(x,y,w,h,r){r=Math.min(r||0,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()};
 function fit(){const s=Math.min(innerWidth/W,innerHeight/H);cv.style.width=W*s+'px';cv.style.height=H*s+'px'}
 addEventListener('resize',fit);fit();
@@ -84,7 +85,7 @@ function getLevel(level){const qs=[],seen=new Set();for(let i=0;i<PER;i++){let q
 /* ---------- state ---------- */
 let st='menu',unlocked=1;try{unlocked=Math.max(1,+localStorage.getItem('crc_unlocked')||1)}catch(e){}
 let level=0,orders=[],order=0,score=0,correct=0,si=0,answered=false,serving=false,fb='',rem=ORDER_TIME,drag=null,mouse=[0,0],last=performance.now();
-const BACK=[22,20,112,43],menuB=[0,1,2].map(i=>[460,310+i*85,280,62]),lvB=[...Array(10)].map((_,i)=>[93+(i%2)*522,174+Math.floor(i/2)*96,485,75]),
+const BACK=[22,20,112,43],menuB=[0,1].map(i=>[460,340+i*90,280,62]),lvB=[...Array(10)].map((_,i)=>[93+(i%2)*522,174+Math.floor(i/2)*96,485,75]),
 retry=[321,525,250,64],cont=[628,525,250,64],ST={CHOP:[32,375,158,132],MIX:[203,375,158,132],COOK:[374,375,158,132],PLATE:[545,375,158,132]},
 TILES=[0,1,2].map(i=>[39+i*225,553,211,70]),CUST=[882,199,155,176],NEXT=[809,615,323,48];
 function startLevel(n){level=n;orders=getLevel(n);order=0;score=0;correct=0;si=0;answered=false;serving=false;fb='';rem=ORDER_TIME;drag=null;st='game'}
@@ -92,7 +93,7 @@ function nextOrder(){order++;if(order>=orders.length){if(correct>=PASS){unlocked
 function finish(ok,msg){answered=true;serving=false;drag=null;fb=msg;if(ok){correct++;score+=10}}
 const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]};
 cv.addEventListener('pointerdown',e=>{e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}const p=mouse=pos(e);
-if(st=='menu'){if(hit(menuB[0],p))st='levels';else if(hit(menuB[1],p))st='instructions';else if(hit(menuB[2],p))try{window.close()}catch(_){}}
+if(st=='menu'){if(hit(menuB[0],p))st='levels';else if(hit(menuB[1],p))st='instructions'}
 else if(st=='levels'||st=='instructions'){if(hit(BACK,p))st='menu';else if(st=='levels')lvB.forEach((r,i)=>{if(hit(r,p)&&i<unlocked&&st=='levels')startLevel(i)})}
 else if(st=='game'){if(hit(BACK,p)){drag=null;st='levels'}else if(answered){if(hit(NEXT,p))nextOrder()}else if(serving){if(hit(ST.PLATE,p))drag={kind:'plate'}}
 else{const i=TILES.findIndex(r=>hit(r,p));if(i>=0)drag={kind:'tile',index:i,label:orders[order].steps[si].options[i]}}}
@@ -130,7 +131,7 @@ if(drag){if(drag.kind=='tile'){const r=[mouse[0]-100,mouse[1]-31,200,62];panel(r
 function frame(now){const dt=Math.min((now-last)/1000,.1);last=now;
 if(st=='game'&&!answered){rem=Math.max(0,rem-dt);if(rem<=0)finish(false,'Customer left! Time is up.')}
 background();
-if(st=='menu'){T('CHAIN RULE CHEF',600,137,'title',INK,1);T('DRAG & COOK RESTAURANT',600,195,'head',BROWN,1);chef(215,387,now,1.6);customer(981,367,now);['PLAY','HOW TO PLAY','EXIT'].forEach((l,i)=>button(menuB[i],l));T('Solve derivative recipes by dragging ingredients through the kitchen!',600,658,'small',INK,1)}
+if(st=='menu'){T('CHAIN RULE CHEF',600,137,'title',INK,1);T('DRAG & COOK RESTAURANT',600,195,'head',BROWN,1);chef(215,387,now,1.6);customer(981,367,now);['PLAY','HOW TO PLAY'].forEach((l,i)=>button(menuB[i],l));T('Solve derivative recipes by dragging ingredients through the kitchen!',600,658,'small',INK,1)}
 else if(st=='instructions'){panel([130,132,940,522]);T('HOW TO PLAY',600,181,'title',INK,1);['1. Choose a derivative level and read the customer order ticket.','2. Read the current step above the kitchen stations.','3. DRAG the correct ingredient tile onto the glowing station.','4. Complete every step: CHOP, MIX, COOK, or PLATE.','5. Drag the finished plate to the CUSTOMER to serve the dish.','6. Wrong drops cost 8 seconds. Serve before patience reaches zero.','7. Each level has 5 orders. Serve at least 4 correctly to pass.','8. Orders get harder even if you make a mistake or time runs out.'].forEach((l,i)=>T(l,190,246+i*44,'small',INK));button(BACK,'BACK')}
 else if(st=='levels'){T('CHOOSE A DERIVATIVE LEVEL',600,95,'title',INK,1);lvB.forEach((r,i)=>{const en=i<unlocked;button(r,en?`${i+1}. ${TOPICS[i]}`:`${i+1}. ${TOPICS[i]}  [LOCKED]`,en)});button(BACK,'BACK')}
 else if(st=='game')drawGame(now);
