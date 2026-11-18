@@ -2,15 +2,20 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Chain Rule Chef</title>
-<style>html,body{margin:0;height:100%;background:#2b1d1a;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+<style>html,body{margin:0;height:100%;height:100dvh;background:#2b1d1a;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
 body{display:flex;align-items:center;justify-content:center}canvas{touch-action:none;display:block}</style></head>
 <body><canvas id="c" width="1200" height="760"></canvas>
 <script>
 const W=1200,H=760,cv=document.getElementById('c'),g=cv.getContext('2d'),DPR=Math.min(window.devicePixelRatio||1,2);
-cv.width=W*DPR;cv.height=H*DPR;g.setTransform(DPR,0,0,DPR,0,0);
+
 if(!g.roundRect)g.roundRect=function(x,y,w,h,r){r=Math.min(r||0,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()};
-function fit(){const s=Math.min(innerWidth/W,innerHeight/H);cv.style.width=W*s+'px';cv.style.height=H*s+'px'}
-addEventListener('resize',fit);fit();
+let rot=false,S=1,OX=0,OY=0,CW=W,CH=H,M=[1,0,0,1,0,0],X0=0,X1=W,Y0=0,Y1=H;
+function fit(){const vv=window.visualViewport;CW=Math.round((vv&&vv.width)||innerWidth);CH=Math.round((vv&&vv.height)||innerHeight);
+cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR);Object.assign(cv.style,{position:'fixed',left:'0',top:'0',width:CW+'px',height:CH+'px',transform:'none'});
+rot=CH>CW*1.1;const lw=rot?CH:CW,lh=rot?CW:CH;S=Math.min(lw/W,lh/H);const VW=lw/S,VH=lh/S;OX=(VW-W)/2;OY=(VH-H)/2;X0=-OX;X1=W+OX;Y0=-OY;Y1=H+OY;
+M=rot?[0,S,-S,0,CW-S*OY,S*OX]:[S,0,0,S,S*OX,S*OY]}
+addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,150));if(window.visualViewport)window.visualViewport.addEventListener('resize',fit);fit();
+function goFS(){try{if(window.matchMedia&&matchMedia('(pointer:coarse)').matches&&!document.fullscreenElement&&document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().then(()=>{try{screen.orientation.lock('landscape').catch(()=>{})}catch(_){}}).catch(()=>{})}}catch(_){}}
 const C=(r,gg,b)=>`rgb(${r},${gg},${b})`;
 const INK=C(65,42,36),DARK=C(65,48,65),BROWN=C(138,87,61),GREEN=C(66,157,100),RED=C(214,76,67),GOLD=C(255,203,96),
 PLUM=C(104,75,91),ROSE=C(232,143,134),SKIN=C(248,195,160),TOPICS=['Basic Derivatives','Power Rule','Constant Multiple Rule','Sum Rule','Difference Rule','Product Rule','Quotient Rule','Chain Rule','Trigonometric Derivatives','Higher-Order Derivatives'];
@@ -30,11 +35,11 @@ const ctr=r=>[r[0]+r[2]/2,r[1]+r[3]/2];
 
 function panel(r,col='rgb(255,251,239)',bd='rgb(231,203,183)',rad=22){const[x,y,w,h]=r;R(x,y+6,w,h,'rgb(135,92,92)',rad);R(x,y,w,h,col,rad);RS(x,y,w,h,bd,2,rad);L(x+23,y+7,x+w-23,y+7,'#fff',2)}
 function button(r,label,en=true){const hv=en&&hit(r,mouse);panel(r,hv?'rgb(255,188,135)':en?'rgb(255,207,162)':'rgb(221,214,211)',en?'rgb(214,137,119)':'rgb(187,177,174)',15);const c=ctr(r);T(label,c[0],c[1],'small',en?DARK:'rgb(141,134,131)',1,r[2]-22)}
-function background(){g.fillStyle='rgb(250,232,221)';g.fillRect(0,0,W,H);g.fillStyle='rgb(255,247,235)';g.fillRect(0,0,W,170);
-for(let y=175;y<715;y+=68){L(0,y,W,y,'rgb(242,215,206)',2);const off=Math.floor(y/68)%2?0:58;for(let x=off;x<W;x+=116)L(x,y,x,y+68,'rgb(242,215,206)',2)}
-g.fillStyle='rgb(174,119,113)';g.fillRect(0,704,W,56);g.fillStyle='rgb(207,150,133)';g.fillRect(0,704,W,9);
-for(let x=0;x<W;x+=95)L(x,716,x+18,H,'rgb(157,104,105)',2);
-for(const x of[178,600,1020]){L(x,0,x,32,'rgb(129,91,94)',4);E(x-42,32,84,47,'rgb(251,224,169)');E(x-37,36,74,36,'rgb(255,246,212)');Ci(x-15,48,7,'#fffff8')}
+function background(){const ex=40;g.fillStyle='rgb(250,232,221)';g.fillRect(X0-ex,Y0-ex,X1-X0+2*ex,Y1-Y0+2*ex);g.fillStyle='rgb(255,247,235)';g.fillRect(X0-ex,Y0-ex,X1-X0+2*ex,170-Y0+ex);
+for(let y=175;y<715;y+=68){L(X0-ex,y,X1+ex,y,'rgb(242,215,206)',2);const off=Math.floor(y/68)%2?0:58,st0=off-116*Math.ceil((off-X0+ex)/116);for(let x=st0;x<X1+ex;x+=116)L(x,y,x,y+68,'rgb(242,215,206)',2)}
+g.fillStyle='rgb(174,119,113)';g.fillRect(X0-ex,704,X1-X0+2*ex,Y1-704+ex);g.fillStyle='rgb(207,150,133)';g.fillRect(X0-ex,704,X1-X0+2*ex,9);
+const fy=Math.max(H,Y1)+ex,k=18*(fy-716)/44,s0=-95*Math.ceil((X0-ex)/-95);for(let x=Math.floor((X0-ex-k)/95)*95;x<X1+ex;x+=95)L(x,716,x+k,fy,'rgb(157,104,105)',2);
+for(const x of[178,600,1020]){L(x,Y0-ex,x,32,'rgb(129,91,94)',4);E(x-42,32,84,47,'rgb(251,224,169)');E(x-37,36,74,36,'rgb(255,246,212)');Ci(x-15,48,7,'#fffff8')}
 for(const[x,y]of[[70,228],[1130,225],[88,628],[1120,633]]){Ci(x,y,10,'rgb(255,245,220)');g.strokeStyle='rgb(234,184,163)';g.lineWidth=2;g.beginPath();g.arc(x,y,10,0,7);g.stroke()}}
 function chef(x,y,t,s){x|=0;y=(y+Math.sin(t/260)*2)|0;const ci=(c,dx,dy,r)=>Ci(x+dx*s,y+dy*s,Math.max(1,r*s),c),bx=(c,dx,dy,w,h,r=0)=>R(x+dx*s,y+dy*s,w*s,h*s,c,r*s);
 bx(PLUM,-41,39,82,78,21);bx('#fffcf8',-37,32,74,76,17);bx(ROSE,-28,68,56,40,10);ci(SKIN,0,3,36);ci(SKIN,-33,5,9);ci(SKIN,33,5,9);ci(DARK,-12,-1,3);ci(DARK,12,-1,3);
@@ -91,8 +96,8 @@ TILES=[0,1,2].map(i=>[39+i*225,553,211,70]),CUST=[882,199,155,176],NEXT=[809,615
 function startLevel(n){level=n;orders=getLevel(n);order=0;score=0;correct=0;si=0;answered=false;serving=false;fb='';rem=ORDER_TIME;drag=null;st='game'}
 function nextOrder(){order++;if(order>=orders.length){if(correct>=PASS){unlocked=Math.max(unlocked,Math.min(10,level+2));try{localStorage.setItem('crc_unlocked',unlocked)}catch(e){}}st='results'}else{si=0;answered=false;serving=false;fb='';rem=ORDER_TIME;drag=null}}
 function finish(ok,msg){answered=true;serving=false;drag=null;fb=msg;if(ok){correct++;score+=10}}
-const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]};
-cv.addEventListener('pointerdown',e=>{e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}const p=mouse=pos(e);
+const pos=e=>{const r=cv.getBoundingClientRect(),cx=e.clientX-r.left,cy=e.clientY-r.top;return rot?[cy/S-OX,(CW-cx)/S-OY]:[cx/S-OX,cy/S-OY]};
+cv.addEventListener('pointerdown',e=>{e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}const p=mouse=pos(e);goFS();
 if(st=='menu'){if(hit(menuB[0],p))st='levels';else if(hit(menuB[1],p))st='instructions'}
 else if(st=='levels'||st=='instructions'){if(hit(BACK,p))st='menu';else if(st=='levels')lvB.forEach((r,i)=>{if(hit(r,p)&&i<unlocked&&st=='levels')startLevel(i)})}
 else if(st=='game'){if(hit(BACK,p)){drag=null;st='levels'}else if(answered){if(hit(NEXT,p))nextOrder()}else if(serving){if(hit(ST.PLATE,p))drag={kind:'plate'}}
@@ -128,7 +133,7 @@ T('YOUR CUSTOMER',957,197,'small',BROWN,1);customer(957,248,tick);L(758,396,1154
 const pat=Math.max(0,Math.min(1,rem/ORDER_TIME));T(`PATIENCE   ${Math.max(0,Math.floor(rem+.999))}s`,758,536,'small',DARK);R(758,566,395,18,'rgb(236,219,210)',9);const bw=Math.round(395*pat);if(bw>0)R(758,566,bw,18,pat>.5?GREEN:pat>.25?GOLD:RED,Math.min(9,bw/2));
 if(answered)button(NEXT,order<PER-1?'NEXT ORDER':'VIEW RESULTS');else if(serving)T('DROP YOUR PLATE ON THE CUSTOMER',957,631,'tiny',GREEN,1,400);else T('FINISH THE RECIPE TO SERVE',957,631,'tiny',BROWN,1,400);
 if(drag){if(drag.kind=='tile'){const r=[mouse[0]-100,mouse[1]-31,200,62];panel(r,'rgb(255,224,173)','rgb(235,163,115)',15);choice(drag.label,r,DARK)}else dish(mouse[0],mouse[1])}}
-function frame(now){const dt=Math.min((now-last)/1000,.1);last=now;
+function frame(now){g.setTransform(M[0]*DPR,M[1]*DPR,M[2]*DPR,M[3]*DPR,M[4]*DPR,M[5]*DPR);const dt=Math.min((now-last)/1000,.1);last=now;
 if(st=='game'&&!answered){rem=Math.max(0,rem-dt);if(rem<=0)finish(false,'Customer left! Time is up.')}
 background();
 if(st=='menu'){T('CHAIN RULE CHEF',600,137,'title',INK,1);T('DRAG & COOK RESTAURANT',600,195,'head',BROWN,1);chef(215,387,now,1.6);customer(981,367,now);['PLAY','HOW TO PLAY'].forEach((l,i)=>button(menuB[i],l));T('Solve derivative recipes by dragging ingredients through the kitchen!',600,658,'small',INK,1)}
