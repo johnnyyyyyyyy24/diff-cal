@@ -373,166 +373,505 @@ const W = 1200,
           correct: String(cor),
         };
       }
-      // Moderate classroom questions: 5 orders per level, 3 stations per order.
-      // Each entry: expression, final answer, CHOP prompt, CHOP answer,
-      // two CHOP distractors, and (for higher-order) first derivative.
+      // Five levels, five orders per level.
       const QUESTIONS = [
-        [
-          ["7x", "7", "What is the derivative of x?", "1", "0", "x"],
-          ["x^2 + 3", "2x", "What is the derivative of 3?", "0", "1", "3"],
-          ["4x + 2", "4", "What is the derivative of 2?", "0", "1", "2"],
-          ["x^3", "3x^2", "What is the exponent of x?", "3", "2", "4"],
-          ["5x^2", "10x", "What is the derivative of x^2?", "2x", "x", "x^2"],
-        ],
-        [
-          ["x^3", "3x^2", "Bring down which exponent?", "3", "2", "4"],
-          ["2x^3", "6x^2", "What is 2 times 3?", "6", "5", "3"],
-          ["x^4", "4x^3", "New exponent after differentiating?", "3", "4", "2"],
-          ["3x^3", "9x^2", "What is 3 times 3?", "9", "6", "3"],
-          ["2x^4", "8x^3", "What is 2 times 4?", "8", "6", "4"],
-        ],
-        [
-          ["3x^2", "6x", "Derivative of x^2?", "2x", "x", "x^2"],
-          ["4x^3", "12x^2", "Derivative of x^3?", "3x^2", "3x", "x^2"],
-          ["2x^4", "8x^3", "Derivative of x^4?", "4x^3", "4x^2", "x^3"],
-          ["5x^2", "10x", "Derivative of x^2?", "2x", "x", "2"],
-          ["3x^3", "9x^2", "Derivative of x^3?", "3x^2", "3x", "x^2"],
-        ],
-        [
-          ["x^2 + 3x", "2x + 3", "Derivative of 3x?", "3", "0", "3x"],
-          ["2x^2 + x", "4x + 1", "Derivative of x?", "1", "0", "x"],
-          ["x^3 + 2", "3x^2", "Derivative of 2?", "0", "1", "2"],
-          ["3x + x^2", "3 + 2x", "Derivative of 3x?", "3", "1", "3x"],
-          ["2x^3 + x", "6x^2 + 1", "Derivative of x?", "1", "0", "x"],
-        ],
-        [
-          ["x^2 - 3x", "2x - 3", "Derivative of 3x?", "3", "1", "0"],
-          ["3x^2 - x", "6x - 1", "Derivative of x?", "1", "0", "x"],
-          ["x^3 - 2", "3x^2", "Derivative of 2?", "0", "1", "2"],
-          ["4x - x^2", "4 - 2x", "Derivative of 4x?", "4", "1", "0"],
-          ["2x^3 - x", "6x^2 - 1", "Derivative of x?", "1", "0", "x"],
-        ],
-        [
-          ["x * x^2", "3x^2", "Derivative of x^2?", "2x", "x", "x^2"],
-          ["x * (x + 2)", "2x + 2", "Derivative of (x + 2)?", "1", "2", "x"],
-          ["2x * x", "4x", "Derivative of 2x?", "2", "1", "0"],
-          ["x^2 * x^2", "4x^3", "Derivative of x^2?", "2x", "x", "x^2"],
-          ["x * (x + 3)", "2x + 3", "Derivative of (x + 3)?", "1", "3", "0"],
-        ],
-        [
-          ["x^2 / x", "1", "Derivative of numerator x^2?", "2x", "x", "2"],
-          ["(x^2 + x) / x", "1", "Derivative of denominator x?", "1", "0", "x"],
-          ["x^3 / x", "2x", "Derivative of denominator x?", "1", "0", "x"],
-          ["(2x^2) / x", "2", "Derivative of numerator 2x^2?", "4x", "2x", "x^2"],
-          ["(x^2 + 2x) / x", "1", "Derivative of denominator x?", "1", "0", "2"],
-        ],
-        [
-          ["(x + 2)^2", "2(x + 2)", "Derivative of inner (x + 2)?", "1", "0", "2"],
-          ["(2x + 1)^2", "4(2x + 1)", "Derivative of inner (2x + 1)?", "2", "1", "0"],
-          ["(x + 1)^3", "3(x + 1)^2", "Derivative of inner (x + 1)?", "1", "0", "3"],
-          ["(3x + 1)^2", "6(3x + 1)", "Derivative of inner (3x + 1)?", "3", "1", "2"],
-          ["(2x + 3)^2", "4(2x + 3)", "Derivative of inner (2x + 3)?", "2", "1", "3"],
-        ],
-        [
-          ["2sin(x)", "2cos(x)", "Derivative of sin(x)?", "cos(x)", "sin(x)", "-sin(x)"],
-          ["3cos(x)", "-3sin(x)", "Derivative of cos(x)?", "-sin(x)", "sin(x)", "cos(x)"],
-          ["sin(2x)", "2cos(2x)", "Derivative of inner 2x?", "2", "1", "0"],
-          ["cos(2x)", "-2sin(2x)", "Derivative of inner 2x?", "2", "1", "0"],
-          ["sin(x) + x", "cos(x) + 1", "Derivative of x?", "1", "0", "x"],
-        ],
-        [
-          ["x^3", "6x", "Original exponent?", "3", "2", "4", "3x^2"],
-          ["2x^3", "12x", "Original exponent?", "3", "2", "4", "6x^2"],
-          ["x^4", "12x^2", "Original exponent?", "4", "3", "2", "4x^3"],
-          ["3x^3", "18x", "Original exponent?", "3", "2", "4", "9x^2"],
-          ["2x^4", "24x^2", "Original exponent?", "4", "3", "2", "8x^3"],
-        ],
-      ];
-      // Each MIX step prepares a part of the derivative; COOK asks for the complete answer.
+  [
+    [
+      "x^3",
+      "3x^2",
+      "Bring down which exponent?",
+      "3",
+      "2",
+      "4"
+    ],
+    [
+      "2x^3",
+      "6x^2",
+      "What is 2 times 3?",
+      "6",
+      "5",
+      "3"
+    ],
+    [
+      "x^4",
+      "4x^3",
+      "New exponent after differentiating?",
+      "3",
+      "4",
+      "2"
+    ],
+    [
+      "3x^3",
+      "9x^2",
+      "What is 3 times 3?",
+      "9",
+      "6",
+      "3"
+    ],
+    [
+      "2x^4",
+      "8x^3",
+      "What is 2 times 4?",
+      "8",
+      "6",
+      "4"
+    ]
+  ],
+  [
+    [
+      "x^2 + 3x",
+      "2x + 3",
+      "Derivative of 3x?",
+      "3",
+      "0",
+      "3x"
+    ],
+    [
+      "3x^2 - x",
+      "6x - 1",
+      "Derivative of x?",
+      "1",
+      "0",
+      "x"
+    ],
+    [
+      "x^3 + 2",
+      "3x^2",
+      "Derivative of 2?",
+      "0",
+      "1",
+      "2"
+    ],
+    [
+      "4x - x^2",
+      "4 - 2x",
+      "Derivative of 4x?",
+      "4",
+      "1",
+      "0"
+    ],
+    [
+      "2x^3 + x",
+      "6x^2 + 1",
+      "Derivative of x?",
+      "1",
+      "0",
+      "x"
+    ]
+  ],
+  [
+    [
+      "x * x^2",
+      "3x^2",
+      "Derivative of x^2?",
+      "2x",
+      "x",
+      "x^2"
+    ],
+    [
+      "x * (x + 2)",
+      "2x + 2",
+      "Derivative of (x + 2)?",
+      "1",
+      "2",
+      "x"
+    ],
+    [
+      "2x * x",
+      "4x",
+      "Derivative of 2x?",
+      "2",
+      "1",
+      "0"
+    ],
+    [
+      "x^2 * x^2",
+      "4x^3",
+      "Derivative of x^2?",
+      "2x",
+      "x",
+      "x^2"
+    ],
+    [
+      "x * (x + 3)",
+      "2x + 3",
+      "Derivative of (x + 3)?",
+      "1",
+      "3",
+      "0"
+    ]
+  ],
+  [
+    [
+      "x^2 / x",
+      "1",
+      "Derivative of numerator x^2?",
+      "2x",
+      "x",
+      "2"
+    ],
+    [
+      "(x^2 + x) / x",
+      "1",
+      "Derivative of denominator x?",
+      "1",
+      "0",
+      "x"
+    ],
+    [
+      "x^3 / x",
+      "2x",
+      "Derivative of denominator x?",
+      "1",
+      "0",
+      "x"
+    ],
+    [
+      "(2x^2) / x",
+      "2",
+      "Derivative of numerator 2x^2?",
+      "4x",
+      "2x",
+      "x^2"
+    ],
+    [
+      "(x^2 + 2x) / x",
+      "1",
+      "Derivative of denominator x?",
+      "1",
+      "0",
+      "2"
+    ]
+  ],
+  [
+    [
+      "(x + 2)^2",
+      "2(x + 2)",
+      "Derivative of inner (x + 2)?",
+      "1",
+      "0",
+      "2"
+    ],
+    [
+      "(2x + 1)^2",
+      "4(2x + 1)",
+      "Derivative of inner (2x + 1)?",
+      "2",
+      "1",
+      "0"
+    ],
+    [
+      "(x + 1)^3",
+      "3(x + 1)^2",
+      "Derivative of inner (x + 1)?",
+      "1",
+      "0",
+      "3"
+    ],
+    [
+      "(3x + 1)^2",
+      "6(3x + 1)",
+      "Derivative of inner (3x + 1)?",
+      "3",
+      "1",
+      "2"
+    ],
+    [
+      "(2x + 3)^2",
+      "4(2x + 3)",
+      "Derivative of inner (2x + 3)?",
+      "2",
+      "1",
+      "3"
+    ]
+  ]
+];
       const MIX_TASKS = [
-        [
-          ["Which term disappears after differentiation?", "Constant", "x term", "Both terms"],
-          ["Differentiate x^2 only", "2x", "x", "x^2"],
-          ["Differentiate 4x only", "4", "4x", "1"],
-          ["After differentiating x^3, what power remains?", "x^2", "x^3", "x"],
-          ["What is 5 multiplied by 2?", "10", "7", "5"],
-        ],
-        [
-          ["After x^3, what power remains?", "x^2", "x^3", "x"],
-          ["After 2x^3, what power remains?", "x^2", "x^3", "x"],
-          ["For x^4, what is the new coefficient?", "4", "3", "1"],
-          ["After 3x^3, what power remains?", "x^2", "x^3", "x"],
-          ["For 2x^4, what is the new exponent?", "3", "4", "2"],
-        ],
-        [
-          ["Multiply 3 by the power 2", "6", "5", "3"],
-          ["Multiply 4 by the power 3", "12", "7", "4"],
-          ["Multiply 2 by the power 4", "8", "6", "4"],
-          ["After differentiating 5x^2, which power remains?", "x", "x^2", "x^3"],
-          ["Multiply 3 by the power 3", "9", "6", "3"],
-        ],
-        [
-          ["Differentiate the first term x^2", "2x", "x", "x^2"],
-          ["Differentiate the first term 2x^2", "4x", "2x", "4"],
-          ["Differentiate the first term x^3", "3x^2", "3x", "x^2"],
-          ["Differentiate the second term x^2", "2x", "x", "2"],
-          ["Differentiate the first term 2x^3", "6x^2", "6x", "2x^2"],
-        ],
-        [
-          ["Differentiate the first term x^2", "2x", "x", "x^2"],
-          ["Differentiate the first term 3x^2", "6x", "3x", "6"],
-          ["Differentiate the first term x^3", "3x^2", "3x", "x^2"],
-          ["Differentiate the second term x^2", "2x", "x", "2"],
-          ["Differentiate the first term 2x^3", "6x^2", "6x", "2x^2"],
-        ],
-        [
-          ["For u=x and v=x^2, what is u'v?", "x^2", "2x^2", "x"],
-          ["For u=x and v=x+2, what is u'v?", "x+2", "x", "2x+2"],
-          ["For u=2x and v=x, what is u'v?", "2x", "2", "x"],
-          ["For u=x^2 and v=x^2, what is u'v?", "2x^3", "2x^2", "x^3"],
-          ["For u=x and v=x+3, what is u'v?", "x+3", "x", "2x+3"],
-        ],
-        [
-          ["Simplify x^2 / x before differentiating", "x", "x^2", "1"],
-          ["Simplify (x^2 + x) / x", "x + 1", "x + x", "x^2 + 1"],
-          ["Simplify x^3 / x", "x^2", "x^3", "x"],
-          ["Simplify 2x^2 / x", "2x", "2x^2", "2"],
-          ["Simplify (x^2 + 2x) / x", "x + 2", "x^2 + 2", "x + 2x"],
-        ],
-        [
-          ["Differentiate the outer square of (x+2)^2", "2(x+2)", "(x+2)^2", "2x+2"],
-          ["Differentiate the outer square of (2x+1)^2", "2(2x+1)", "4(2x+1)", "(2x+1)^2"],
-          ["Differentiate the outer cube of (x+1)^3", "3(x+1)^2", "3(x+1)", "(x+1)^2"],
-          ["Differentiate the outer square of (3x+1)^2", "2(3x+1)", "6(3x+1)", "(3x+1)^2"],
-          ["Differentiate the outer square of (2x+3)^2", "2(2x+3)", "4(2x+3)", "(2x+3)^2"],
-        ],
-        [
-          ["Differentiate sin(x) before multiplying by 2", "cos(x)", "-sin(x)", "sin(x)"],
-          ["Differentiate cos(x) before multiplying by 3", "-sin(x)", "cos(x)", "sin(x)"],
-          ["Differentiate sin(2x) before multiplying by inner derivative", "cos(2x)", "sin(2x)", "-cos(2x)"],
-          ["Differentiate cos(2x) before multiplying by inner derivative", "-sin(2x)", "cos(2x)", "sin(2x)"],
-          ["Differentiate sin(x) first", "cos(x)", "sin(x)", "-sin(x)"],
-        ],
-      ];
+  [
+    [
+      "After differentiating x^3, which power of x remains?",
+      "x^2",
+      "x^3",
+      "x"
+    ],
+    [
+      "After differentiating 2x^3, which power of x remains?",
+      "x^2",
+      "x^3",
+      "x"
+    ],
+    [
+      "For x^4, what is the new coefficient?",
+      "4",
+      "3",
+      "1"
+    ],
+    [
+      "After differentiating 3x^3, which power of x remains?",
+      "x^2",
+      "x^3",
+      "x"
+    ],
+    [
+      "For 2x^4, what is the new exponent?",
+      "3",
+      "4",
+      "2"
+    ]
+  ],
+  [
+    [
+      "Differentiate the first term x^2",
+      "2x",
+      "x",
+      "x^2"
+    ],
+    [
+      "Differentiate the first term 3x^2",
+      "6x",
+      "3x",
+      "6"
+    ],
+    [
+      "Differentiate the first term x^3",
+      "3x^2",
+      "3x",
+      "x^2"
+    ],
+    [
+      "Differentiate x^2 before applying the minus sign.",
+      "2x",
+      "x",
+      "2"
+    ],
+    [
+      "Differentiate the first term 2x^3",
+      "6x^2",
+      "6x",
+      "2x^2"
+    ]
+  ],
+  [
+    [
+      "For u=x and v=x^2, what is u'v?",
+      "x^2",
+      "2x^2",
+      "x"
+    ],
+    [
+      "For u=x and v=x+2, what is u'v?",
+      "x+2",
+      "x",
+      "2x+2"
+    ],
+    [
+      "For u=2x and v=x, what is u'v?",
+      "2x",
+      "2",
+      "x"
+    ],
+    [
+      "For u=x^2 and v=x^2, what is u'v?",
+      "2x^3",
+      "2x^2",
+      "x^3"
+    ],
+    [
+      "For u=x and v=x+3, what is u'v?",
+      "x+3",
+      "x",
+      "2x+3"
+    ]
+  ],
+  [
+    [
+      "Simplify x^2 / x before differentiating (x != 0)",
+      "x",
+      "x^2",
+      "1"
+    ],
+    [
+      "Simplify (x^2 + x) / x (x != 0)",
+      "x + 1",
+      "x + x",
+      "x^2 + 1"
+    ],
+    [
+      "Simplify x^3 / x (x != 0)",
+      "x^2",
+      "x^3",
+      "x"
+    ],
+    [
+      "Simplify 2x^2 / x (x != 0)",
+      "2x",
+      "2x^2",
+      "2"
+    ],
+    [
+      "Simplify (x^2 + 2x) / x (x != 0)",
+      "x + 2",
+      "x^2 + 2",
+      "x + 2x"
+    ]
+  ],
+  [
+    [
+      "Let u = x + 2. Differentiate u^2 with respect to u.",
+      "2u",
+      "u^2",
+      "u"
+    ],
+    [
+      "Let u = 2x + 1. Differentiate u^2 with respect to u.",
+      "2u",
+      "u^2",
+      "u"
+    ],
+    [
+      "Let u = x + 1. Differentiate u^3 with respect to u.",
+      "3u^2",
+      "3u",
+      "u^3"
+    ],
+    [
+      "Let u = 3x + 1. Differentiate u^2 with respect to u.",
+      "2u",
+      "u^2",
+      "u"
+    ],
+    [
+      "Let u = 2x + 3. Differentiate u^2 with respect to u.",
+      "2u",
+      "u^2",
+      "u"
+    ]
+  ]
+];
+      const COOK_DISTRACTORS = [
+  [
+    [
+      "3x",
+      "x^2"
+    ],
+    [
+      "6x",
+      "2x^2"
+    ],
+    [
+      "4x^2",
+      "x^3"
+    ],
+    [
+      "9x",
+      "3x^2"
+    ],
+    [
+      "8x^2",
+      "2x^3"
+    ]
+  ],
+  [
+    [
+      "2x",
+      "2x - 3"
+    ],
+    [
+      "6x + 1",
+      "3x - 1"
+    ],
+    [
+      "3x^2 + 2",
+      "3x"
+    ],
+    [
+      "4 + 2x",
+      "4 - x"
+    ],
+    [
+      "6x^2",
+      "2x^2 + 1"
+    ]
+  ],
+  [
+    [
+      "2x^2",
+      "3x"
+    ],
+    [
+      "x + 2",
+      "2x"
+    ],
+    [
+      "2x",
+      "4"
+    ],
+    [
+      "4x^2",
+      "2x^3"
+    ],
+    [
+      "2x",
+      "x + 3"
+    ]
+  ],
+  [
+    [
+      "x",
+      "2"
+    ],
+    [
+      "x + 1",
+      "0"
+    ],
+    [
+      "x^2",
+      "x"
+    ],
+    [
+      "2x",
+      "1"
+    ],
+    [
+      "x + 2",
+      "2"
+    ]
+  ],
+  [
+    [
+      "x + 2",
+      "2(x + 1)"
+    ],
+    [
+      "2(2x + 1)",
+      "4x"
+    ],
+    [
+      "3(x + 1)",
+      "(x + 1)^2"
+    ],
+    [
+      "2(3x + 1)",
+      "3(3x + 1)"
+    ],
+    [
+      "2(2x + 3)",
+      "4x + 3"
+    ]
+  ]
+];
       function create(level, index) {
-        const topic = [1, index % 2 === 0 ? 3 : 4, 5, 6, 7][level];
-        const [expression, result, hint, first, wrong1, wrong2, intermediate] = QUESTIONS[topic][index];
-        const mix = topic === 9 ? null : MIX_TASKS[topic][index];
+        const [expression, result, hint, first, wrong1, wrong2] = QUESTIONS[level][index];
+        const mix = MIX_TASKS[level][index];
         const steps = [
           mk("CHOP", hint, first, wrong1, wrong2),
-          topic === 9
-            ? mk("MIX", "What is the first derivative f'(x)?", intermediate, result, expression)
-            : mk("MIX", mix[0], mix[1], mix[2], mix[3]),
-          mk("COOK", topic === 9 ? "What is the second derivative f''(x)?" : "Now find the complete derivative f'(x)", result,
-             expression, topic === 9 ? intermediate : (result === "0" ? "1" : "0")),
+          mk("MIX", mix[0], mix[1], mix[2], mix[3]),
+          mk("COOK", "Now find the complete derivative f'(x)", result, ...COOK_DISTRACTORS[level][index]),
         ];
         return {
-          level,
-          number: index + 1,
-          difficulty: "Moderate",
-          equation: `f(x) = ${expression}` + (topic === 9 ? "  |  Find f''(x)" : ""),
-          result,
-          steps,
+          level, number: index + 1, difficulty: "Moderate",
+          equation: `f(x) = ${expression}` + (level === 3 ? "  (x != 0)" : ""),
+          result, steps,
           dish: ["Veggie Bowl", "Hot Soup", "Golden Pancake", "Fruit Tart", "Chef Special"][(level + index) % 5],
         };
       }
