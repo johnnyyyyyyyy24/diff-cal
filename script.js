@@ -89,18 +89,10 @@ const W = 1200,
         PLUM = C(104, 75, 91),
         ROSE = C(232, 143, 134),
         SKIN = C(248, 195, 160),
-        TOPICS = [
-          "Basic Derivatives",
-          "Power Rule",
-          "Constant Multiple Rule",
-          "Sum Rule",
-          "Difference Rule",
-          "Product Rule",
-          "Quotient Rule",
-          "Chain Rule",
-          "Trigonometric Derivatives",
-          "Higher-Order Derivatives",
-        ];
+        TOPICS = ["Power Rule", "Sum and Difference Rules", "Product Rule", "Quotient Rule", "Chain Rule"];
+      const LEVEL_COUNT = TOPICS.length;
+      const LOADING_TIME = 3000;
+      let loadingStart = null;
       const ORDER_TIME = 45,
         PASS = 4,
         PER = 5,
@@ -523,21 +515,22 @@ const W = 1200,
         ],
       ];
       function create(level, index) {
-        const [expression, result, hint, first, wrong1, wrong2, intermediate] = QUESTIONS[level][index];
-        const mix = level === 9 ? null : MIX_TASKS[level][index];
+        const topic = [1, index % 2 === 0 ? 3 : 4, 5, 6, 7][level];
+        const [expression, result, hint, first, wrong1, wrong2, intermediate] = QUESTIONS[topic][index];
+        const mix = topic === 9 ? null : MIX_TASKS[topic][index];
         const steps = [
           mk("CHOP", hint, first, wrong1, wrong2),
-          level === 9
+          topic === 9
             ? mk("MIX", "What is the first derivative f'(x)?", intermediate, result, expression)
             : mk("MIX", mix[0], mix[1], mix[2], mix[3]),
-          mk("COOK", level === 9 ? "What is the second derivative f''(x)?" : "Now find the complete derivative f'(x)", result,
-             expression, level === 9 ? intermediate : (result === "0" ? "1" : "0")),
+          mk("COOK", topic === 9 ? "What is the second derivative f''(x)?" : "Now find the complete derivative f'(x)", result,
+             expression, topic === 9 ? intermediate : (result === "0" ? "1" : "0")),
         ];
         return {
           level,
           number: index + 1,
           difficulty: "Moderate",
-          equation: `f(x) = ${expression}` + (level === 9 ? "  |  Find f''(x)" : ""),
+          equation: `f(x) = ${expression}` + (topic === 9 ? "  |  Find f''(x)" : ""),
           result,
           steps,
           dish: ["Veggie Bowl", "Hot Soup", "Golden Pancake", "Fruit Tart", "Chef Special"][(level + index) % 5],
@@ -560,10 +553,10 @@ const W = 1200,
       }
 
       /* ---------- state ---------- */
-      let st = "menu",
+      let st = "loading",
         unlocked = 1;
       try {
-        unlocked = Math.max(1, +localStorage.getItem("crc_unlocked") || 1);
+        unlocked = Math.min(LEVEL_COUNT, Math.max(1, +localStorage.getItem("crc_5_unlocked") || 1));
       } catch (e) {}
       let level = 0,
         orders = [],
@@ -580,12 +573,7 @@ const W = 1200,
         last = performance.now();
       const BACK = [22, 20, 112, 43],
         menuB = [0, 1].map((i) => [460, 340 + i * 90, 280, 62]),
-        lvB = [...Array(10)].map((_, i) => [
-          93 + (i % 2) * 522,
-          174 + Math.floor(i / 2) * 96,
-          485,
-          75,
-        ]),
+        lvB = Array.from({length: LEVEL_COUNT}, (_, i) => [300, 165 + i * 100, 600, 76]),
         retry = [321, 525, 250, 64],
         cont = [628, 525, 250, 64],
         ST = {
@@ -615,9 +603,9 @@ const W = 1200,
         order++;
         if (order >= orders.length) {
           if (correct >= PASS) {
-            unlocked = Math.max(unlocked, Math.min(10, level + 2));
+            unlocked = Math.max(unlocked, Math.min(LEVEL_COUNT, level + 2));
             try {
-              localStorage.setItem("crc_unlocked", unlocked);
+              localStorage.setItem("crc_5_unlocked", unlocked);
             } catch (e) {}
           }
           st = "results";
@@ -685,7 +673,7 @@ const W = 1200,
           if (hit(BACK, p)) st = "levels";
           else if (hit(retry, p)) startLevel(level);
           else if (hit(cont, p)) {
-            if (correct >= PASS && level < 9) startLevel(level + 1);
+            if (correct >= PASS && level < LEVEL_COUNT - 1) startLevel(level + 1);
             else st = "levels";
           }
         }
@@ -724,7 +712,7 @@ const W = 1200,
           if (st == "game") {
             drag = null;
             st = "levels";
-          } else if (st != "menu") st = "menu";
+          } else if (st != "menu" && st != "loading") st = "menu";
         }
       });
 
@@ -936,7 +924,19 @@ const W = 1200,
           if (rem <= 0) finish(false, "Customer left! Time is up.");
         }
         background();
-        if (st == "menu") {
+        if (st == "loading") {
+          if (loadingStart === null) loadingStart = now;
+          const progress = Math.min(1, (now - loadingStart) / LOADING_TIME);
+          panel([250, 105, 700, 550]);
+          T("CHAIN RULE CHEF", 600, 165, "title", INK, 1);
+          T("Preparing your kitchen...", 600, 225, "head", BROWN, 1);
+          chef(600, 350, now, 1.35);
+          dish(600, 535);
+          R(350, 585, 500, 22, "rgb(236,219,210)", 11);
+          if (progress > 0) R(350, 585, 500 * progress, 22, GREEN, Math.min(11, 250 * progress));
+          T(Math.floor(progress * 100) + "%", 600, 630, "small", DARK, 1);
+          if (progress >= 1) st = "menu";
+        } else if (st == "menu") {
           T("CHAIN RULE CHEF", 600, 137, "title", INK, 1);
           T("DRAG & COOK RESTAURANT", 600, 195, "head", BROWN, 1);
           chef(215, 387, now, 1.6);
@@ -961,7 +961,7 @@ const W = 1200,
             "5. Drag the finished plate to the CUSTOMER to serve the dish.",
             "6. Wrong drops cost 8 seconds. Serve before patience reaches zero.",
             "7. Each level has 5 orders. Serve at least 4 correctly to pass.",
-            "8. Orders get harder even if you make a mistake or time runs out.",
+            "8. Complete all five levels to finish the game.",
           ].forEach((l, i) => T(l, 190, 246 + i * 44, "small", INK));
           button(BACK, "BACK");
         } else if (st == "levels") {
@@ -993,7 +993,7 @@ const W = 1200,
           T(`Served orders: ${correct}/${PER}`, 600, 365, "head", INK, 1);
           T(`Score: ${score}/${PER * 10}`, 600, 410, "head", INK, 1);
           T(
-            ok && level < 9
+            ok && level < LEVEL_COUNT - 1
               ? "Next level unlocked!"
               : ok
                 ? "All levels completed!"
@@ -1005,7 +1005,7 @@ const W = 1200,
             1,
           );
           button(retry, "RETRY LEVEL");
-          button(cont, ok && level < 9 ? "NEXT LEVEL" : "LEVEL SELECT");
+          button(cont, ok && level < LEVEL_COUNT - 1 ? "NEXT LEVEL" : "LEVEL SELECT");
           button(BACK, "BACK");
         }
         requestAnimationFrame(frame);
